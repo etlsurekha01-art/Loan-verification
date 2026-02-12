@@ -1,0 +1,79 @@
+# Docker ignore file for Agentic AI Loan Verification System
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+loan_verification.db
+
+# Logs
+*.log
+server.log
+nohup.out
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation (optional - uncomment if you don't want docs in image)
+# *.md
+# docs/
+
+# Test files (optional - uncomment if you don't want tests in image)
+# test_*.py
+# *_test.py
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

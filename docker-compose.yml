@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  loan-verification-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: loan-verification-system
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - SERPER_API_KEY=${SERPER_API_KEY}
+      - DATABASE_PATH=/app/data/loan_verification.db
+    env_file:
+      - .env
+    volumes:
+      # Mount database directory for persistence
+      - loan-data:/app/data
+      # Mount code for development (comment out for production)
+      - ./main.py:/app/main.py
+      - ./models.py:/app/models.py
+      - ./database.py:/app/database.py
+      - ./orchestrator.py:/app/orchestrator.py
+      - ./agents:/app/agents
+      - ./serper_service.py:/app/serper_service.py
+      - ./simple_loan_models.py:/app/simple_loan_models.py
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - loan-network
+
+volumes:
+  loan-data:
+    driver: local
+
+networks:
+  loan-network:
+    driver: bridge
