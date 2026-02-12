@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Loan Verification System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: white;
+            cursor: pointer;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .result-container.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-approved {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+
+        .result-rejected {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+        }
+
+        .result-conditional {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .result-icon {
+            font-size: 48px;
+            margin-right: 15px;
+        }
+
+        .result-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .result-approved .result-title {
+            color: #28a745;
+        }
+
+        .result-rejected .result-title {
+            color: #dc3545;
+        }
+
+        .result-conditional .result-title {
+            color: #856404;
+        }
+
+        .result-details {
+            margin-top: 20px;
+        }
+
+        .detail-item {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #555;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            color: #333;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .risk-score {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .risk-low {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .risk-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .risk-high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .conditions-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .conditions-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .conditions-list li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #856404;
+            font-weight: bold;
+        }
+
+        .agent-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .agent-card {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .agent-card-title {
+            font-weight: 600;
+            font-size: 13px;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .agent-card-content {
+            font-size: 12px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .agent-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏦 AI Loan Verification System</h1>
+            <p>Multi-Agent Loan Eligibility Assessment</p>
+        </div>
+
+        <div class="content">
+            <form id="loanForm">
+                <div class="form-group">
+                    <label for="name">Full Name *</label>
+                    <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="income">Annual Income ($) *</label>
+                        <input type="number" id="income" name="income" required min="0" step="0.01" placeholder="75000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loan_amount">Loan Amount ($) *</label>
+                        <input type="number" id="loan_amount" name="loan_amount" required min="0" step="0.01" placeholder="50000">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="existing_loans">Existing Loans *</label>
+                        <input type="number" id="existing_loans" name="existing_loans" required min="0" step="1" placeholder="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="repayment_score">Repayment Score (0-10) *</label>
+                        <input type="number" id="repayment_score" name="repayment_score" required min="0" max="10" step="0.1" placeholder="8.5">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="employment_years">Employment Years *</label>
+                        <input type="number" id="employment_years" name="employment_years" required min="0" step="0.1" placeholder="5.5">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="company_name">Company Name *</label>
+                        <input type="text" id="company_name" name="company_name" required placeholder="Tech Corp">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="linkedin_url">LinkedIn Profile URL (Recommended for better verification)</label>
+                    <input type="url" id="linkedin_url" name="linkedin_url" placeholder="https://linkedin.com/in/yourprofile">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="job_title">Job Title</label>
+                        <input type="text" id="job_title" name="job_title" placeholder="Senior Software Engineer">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="employment_type">Employment Type</label>
+                        <select id="employment_type" name="employment_type">
+                            <option value="">Select Type</option>
+                            <option value="Full-time">Full-time</option>
+                            <option value="Part-time">Part-time</option>
+                            <option value="Contract">Contract</option>
+                            <option value="Self-employed">Self-employed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="previous_employers">Number of Previous Employers</label>
+                        <input type="number" id="previous_employers" name="previous_employers" min="0" step="1" placeholder="2">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="professional_email">Professional Email</label>
+                        <input type="email" id="professional_email" name="professional_email" placeholder="you@company.com">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="collateral_value">Collateral Value ($) *</label>
+                    <input type="number" id="collateral_value" name="collateral_value" required min="0" step="0.01" placeholder="60000">
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    Submit Loan Application
+                </button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Processing your application through our AI agents...</p>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <div class="result-container" id="resultContainer">
+                <div class="result-header">
+                    <div class="result-icon" id="resultIcon"></div>
+                    <div>
+                        <div class="result-title" id="resultTitle"></div>
+                        <div class="risk-score" id="riskScore"></div>
+                    </div>
+                </div>
+
+                <div class="result-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Decision Reasoning</div>
+                        <div class="detail-value" id="reasoning"></div>
+                    </div>
+
+                    <div class="detail-item" id="conditionsContainer" style="display: none;">
+                        <div class="detail-label">Conditions Required</div>
+                        <ul class="conditions-list" id="conditionsList"></ul>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-label">Agent Assessment Summary</div>
+                        <div class="agent-summary" id="agentSummary"></div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-label">Task Information</div>
+                        <div class="detail-value">
+                            <strong>Task ID:</strong> <span id="taskId"></span><br>
+                            <strong>Processed At:</strong> <span id="processedAt"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+
+        document.getElementById('loanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Get form data
+            const formData = {
+                name: document.getElementById('name').value,
+                income: parseFloat(document.getElementById('income').value),
+                loan_amount: parseFloat(document.getElementById('loan_amount').value),
+                existing_loans: parseInt(document.getElementById('existing_loans').value),
+                repayment_score: parseFloat(document.getElementById('repayment_score').value),
+                employment_years: parseFloat(document.getElementById('employment_years').value),
+                company_name: document.getElementById('company_name').value,
+                collateral_value: parseFloat(document.getElementById('collateral_value').value)
+            };
+
+            // Add optional fields if provided
+            const linkedin_url = document.getElementById('linkedin_url').value;
+            if (linkedin_url) formData.linkedin_url = linkedin_url;
+
+            const job_title = document.getElementById('job_title').value;
+            if (job_title) formData.job_title = job_title;
+
+            const employment_type = document.getElementById('employment_type').value;
+            if (employment_type) formData.employment_type = employment_type;
+
+            const previous_employers = document.getElementById('previous_employers').value;
+            if (previous_employers) formData.previous_employers = parseInt(previous_employers);
+
+            const professional_email = document.getElementById('professional_email').value;
+            if (professional_email) formData.professional_email = professional_email;
+
+            // Show loading
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('resultContainer').classList.remove('show');
+            document.getElementById('errorMessage').classList.remove('show');
+            document.getElementById('submitBtn').disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/loan/apply`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                displayResult(result);
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('errorMessage').textContent = 
+                    'Error processing your application. Please ensure the server is running at ' + API_BASE_URL;
+                document.getElementById('errorMessage').classList.add('show');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('submitBtn').disabled = false;
+            }
+        });
+
+        function displayResult(result) {
+            const container = document.getElementById('resultContainer');
+            const decision = result.decision;
+
+            // Set decision-specific styling
+            container.className = 'result-container show';
+            if (decision === 'Approved') {
+                container.classList.add('result-approved');
+                document.getElementById('resultIcon').textContent = '✅';
+                document.getElementById('resultTitle').textContent = 'Loan Approved!';
+            } else if (decision === 'Rejected') {
+                container.classList.add('result-rejected');
+                document.getElementById('resultIcon').textContent = '❌';
+                document.getElementById('resultTitle').textContent = 'Loan Rejected';
+            } else {
+                container.classList.add('result-conditional');
+                document.getElementById('resultIcon').textContent = '⚠️';
+                document.getElementById('resultTitle').textContent = 'Conditional Approval';
+            }
+
+            // Display risk score
+            const riskScore = result.risk_score;
+            const riskScoreElement = document.getElementById('riskScore');
+            let riskClass = 'risk-low';
+            let riskText = 'Low Risk';
+            
+            if (riskScore >= 0.6) {
+                riskClass = 'risk-high';
+                riskText = 'High Risk';
+            } else if (riskScore >= 0.3) {
+                riskClass = 'risk-medium';
+                riskText = 'Medium Risk';
+            }
+
+            riskScoreElement.className = 'risk-score ' + riskClass;
+            riskScoreElement.textContent = `${riskText} (${(riskScore * 100).toFixed(1)}%)`;
+
+            // Display reasoning
+            document.getElementById('reasoning').textContent = result.reasoning;
+
+            // Display conditions if present
+            const conditionsContainer = document.getElementById('conditionsContainer');
+            if (result.agent_summary?.final_decision?.conditions && 
+                result.agent_summary.final_decision.conditions.length > 0) {
+                conditionsContainer.style.display = 'block';
+                const conditionsList = document.getElementById('conditionsList');
+                conditionsList.innerHTML = '';
+                result.agent_summary.final_decision.conditions.forEach(condition => {
+                    const li = document.createElement('li');
+                    li.textContent = condition;
+                    conditionsList.appendChild(li);
+                });
+            } else {
+                conditionsContainer.style.display = 'none';
+            }
+
+            // Display agent summary
+            displayAgentSummary(result.agent_summary);
+
+            // Display task info
+            document.getElementById('taskId').textContent = result.task_id || 'N/A';
+            document.getElementById('processedAt').textContent = 
+                result.processed_at ? new Date(result.processed_at).toLocaleString() : 'N/A';
+
+            // Scroll to result
+            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function displayAgentSummary(summary) {
+            const container = document.getElementById('agentSummary');
+            container.innerHTML = '';
+
+            if (summary.credit) {
+                container.innerHTML += `
+                    <div class="agent-card">
+                        <div class="agent-card-title">💳 Credit Analysis</div>
+                        <div class="agent-card-content">
+                            Risk: ${summary.credit.risk_category}<br>
+                            Score: ${summary.credit.credit_score.toFixed(1)}/10<br>
+                            Status: ${summary.credit.approved ? '✓ Passed' : '✗ Failed'}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (summary.employment) {
+                let linkedinStatus = summary.employment.linkedin_profile_found ? '✓ Verified' : '⚠ Not Provided';
+                container.innerHTML += `
+                    <div class="agent-card">
+                        <div class="agent-card-title">💼 Employment</div>
+                        <div class="agent-card-content">
+                            Verified: ${summary.employment.employment_verified ? 'Yes' : 'No'}<br>
+                            LinkedIn: ${linkedinStatus}<br>
+                            Stability: ${summary.employment.employment_stability}<br>
+                            Risk: ${summary.employment.risk_flag ? '⚠ Yes' : '✓ No'}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (summary.collateral) {
+                container.innerHTML += `
+                    <div class="agent-card">
+                        <div class="agent-card-title">🏠 Collateral</div>
+                        <div class="agent-card-content">
+                            Adequate: ${summary.collateral.collateral_adequate ? 'Yes' : 'No'}<br>
+                            LTV: ${(summary.collateral.ltv_ratio * 100).toFixed(1)}%<br>
+                            Status: ${summary.collateral.approved ? '✓ Passed' : '✗ Failed'}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (summary.critique) {
+                container.innerHTML += `
+                    <div class="agent-card">
+                        <div class="agent-card-title">🔍 Quality Review</div>
+                        <div class="agent-card-content">
+                            Confidence: ${(summary.critique.confidence_score * 100).toFixed(1)}%<br>
+                            Issues: ${summary.critique.identified_issues.length}<br>
+                            Assessment: AI-Reviewed
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
